@@ -18,6 +18,7 @@ For a transducer ring array with N elements:
 
 - `delta_tof`: this is a N x N matrix. Each `(tdx, rdx)` value contains the time-of-flight difference in seconds between the phantom UST data and the watershot UST data, for the ray joining the `tdx` and `rdx` transducer elements: `delta_tof(tdx, rdx) = tof_phantom(tdx, rdx) - tof_water(tdx, rdx)`. Values of `NaN` should be used for missing data, not `0`.
 - `element_positions`: this is a N x 2 matrix containing the cartesian coordinates of each transducer element. The ring array should be centred on `(0, 0)`.
+- `temperature`: temperature of the water during data acquisition (degrees C).
 
 **Note:** Reciprocity means that a ray joining `tx = 1` with `rx = 139` should have the same time-of-flight data as a ray joining `tx = 139` with `rx = 1`. Therefore, for faster computation the lower triangular part of `delta_tof` should be set to `NaN` so that the code ignores these rays.
 
@@ -40,38 +41,44 @@ This process repeats for each iteration.
 ## Getting Started
 
 Clone this repository in a terminal: `git clone https://github.com/ucl-bug/ust-sart.git`
-Open Matlab2022a or more recent, and add the folder to tha path:
+Open Matlab2022a or more recent, and add the folder to the path:
 ```
-addpath('<pathname>/ust-sart');
+addpath(genpath('<pathname>\ust-sart'));
 ```
-
-Then, run the example script `sart_example.m`.
+This code uses the functions `waterSoundSpeed` and `getWin` from the [k-Wave toolbox](https://github.com/ucl-bug/k-wave).
+Change directories to the example folder, and run the example script `sart_example.m`.
 
 ```
 close all
 clearvars
 
-load('256_element_UST_array_predicted_positions.mat', 'element_positions');
-load('delta_tof_phantom.mat', 'delta_tof');
+% Make sure ust-sart is on the path
+addpath(genpath('..\')); 
+load('example_element_positions');
+load('example_delta_tof');
 
-% remove lower triangle data (it's reciprocal) to save computation time
+% remove lower triangle TOF data (it's reciprocal) to save computation time
 delta_tof(logical(tril(ones(size(delta_tof)), -1))) = NaN;
 
-% step size for iteration 1
-dx0 = 4e-3; 
-% upsampling factor for each iteration (relative to original step size)
-upsample_factors = [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 4, 4, 4, 4]; 
-Nit = length(upsample_factors);
+% Initialise sart object
+L           = 0.23; % grid length [m]
+temperature = 20;   % water temperature [degC]
+sart        = SartExperiment(L, element_positions, delta_tof, temperature);
 
-sart = SartExperiment;
-sart.deriveParams(dx0);
-sart.loadDetectorPositions(element_positions)
-sart.loadTOFdata(delta_tof, 20)
+% Plot setup and data
 sart.plotSetup;
 
-init_est = 1480 * ones(sart.Nx);
-hamming = 0; % boolean (hamming window used to backpropagate errors for each ray?)
-sart.reconstructSart(init_est, Nit, upsample_factors, hamming);
+% Perform reconstruction
+ups        = [1, 1];       % upsampling factors
+Nit        = length(ups);  % number of iterations
+dx0        = 4e-3;         % step size for iteration 1 [m]
+init_c_val = sart.c_water; % sound speed value for homogeneous initial estimate [m/s]
+hamming    = 0;            % boolean controlling whether hamming window is used
+recon_d    = 0.135;        % diameter of reconstruction circle [m]
+sart.reconstructSart(init_c_val, recon_d, Nit, dx0, ups, hamming=hamming);
+
+% plot final estimate
+figure; imagesc(squeeze(sart.estimates(:,:,end))); axis image;
 ```
 
 ![recon_example](https://github.com/ucl-bug/ust-sart/blob/main/recon_example.png)
