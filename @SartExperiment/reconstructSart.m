@@ -29,9 +29,15 @@ function reconstructSart(obj, init_c_val, recon_d, Nit, dx0, upsample_factors, o
 %     hamming          - [boolean] Set to true to use a Hamming window when
 %                        distributing errors along each ray
 %                        (t_ij in eqn 35 section 7.4 in Kak&Slaney1988)
+%
+% REFERENCES:
+%     A. C. Kak and Malcolm Slaney, Principles of Computerized Tomographic
+%     Imaging, IEEE Press, 1988 (section 7.4), available at
+%     https://www.slaney.org/pct/pct-toc.html
+%
 % ABOUT:
-%     author           - Morgan Roberts
-%     date             - 9th November 2022
+%     author              - Morgan Roberts
+%     date                - 9th November 2022
 
 arguments
     obj
