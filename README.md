@@ -13,7 +13,7 @@ This code is intended to be used to reconstruct ultrasound tomography (UST) data
 - Alternatively, iterative methods should be used, such as Kaczmarz's method of projections.
 - This code is an implementation of the straight ray tracing technique described by Kak and Slaney in Chapter 7 of `A. C. Kak and Malcolm Slaney, Principles of Computerized Tomographic Imaging, IEEE Press, 1988` (section 7.4, or p.11 in the pdf), available [here](https://www.slaney.org/pct/pct-toc.html), or in this repository.
 
-## Required input data
+## Required Input Data
 For a transducer ring array with N elements:
 
 - `delta_tof`: this is a N x N matrix. Each `(tdx, rdx)` value contains the time-of-flight difference in seconds between the phantom UST data and the watershot UST data, for the ray joining the `tdx` and `rdx` transducer elements: `delta_tof(tdx, rdx) = tof_phantom(tdx, rdx) - tof_water(tdx, rdx)`. Values of `NaN` should be used for missing data, not `0`.
@@ -21,7 +21,32 @@ For a transducer ring array with N elements:
 
 **Note:** Reciprocity means that a ray joining `tx = 1` with `rx = 139` should have the same time-of-flight data as a ray joining `tx = 139` with `rx = 1`. Therefore, for faster computation the lower triangular part of `delta_tof` should be set to `NaN` so that the code ignores these rays.
 
-## Example
+## Slowness and Sound Speed
+For every iteration, the sound speed estimate `c_est` is first converted to relative slowness:
+```
+s_est = ((1 ./ c_est) - (1 ./ c_water));
+```
+The slowness difference relative to water `s_est` is then used to solve the effective linear alebgra problem 
+```
+delta_tof = d * s_est;
+```
+using Kaczmarz's method of projections, since the distance matrix `d` is too large to store in memory.
+Finally, the new slowness estimate `new_s_est` is converted back to sound speed:
+```
+new_c_est = c_water ./ ((new_s_est .* c_water) + 1);
+```
+This process repeats for each iteration.
+
+## Getting Started
+
+Clone this repository in a terminal: `git clone https://github.com/ucl-bug/ust-sart.git`
+Open Matlab2022a or more recent, and add the folder to tha path:
+```
+addpath('<pathname>/ust-sart');
+```
+
+Then, run the example script `sart_example.m`.
+
 ```
 close all
 clearvars
@@ -48,3 +73,5 @@ init_est = 1480 * ones(sart.Nx);
 hamming = 0; % boolean (hamming window used to backpropagate errors for each ray?)
 sart.reconstructSart(init_est, Nit, upsample_factors, hamming);
 ```
+
+![recon_example](https://github.com/ucl-bug/ust-sart/blob/main/recon_example.png)
