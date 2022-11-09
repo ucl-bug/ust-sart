@@ -18,7 +18,7 @@ sart        = SartExperiment(L, element_positions, delta_tof, temperature);
 sart.plotSetup;
 
 % Perform reconstruction
-ups        = [1, 1];       % upsampling factors
+ups        = [1, 1, 2, 4]; % upsampling factors for each iteration
 Nit        = length(ups);  % number of iterations
 dx0        = 4e-3;         % step size for iteration 1 [m]
 init_c_val = sart.c_water; % sound speed value for homogeneous initial estimate [m/s]

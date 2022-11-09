@@ -38,6 +38,16 @@ new_c_est = c_water ./ ((new_s_est .* c_water) + 1);
 ```
 This process repeats for each iteration.
 
+## Upsampling
+
+For fast computation, it is common to start the image reconstruction on a coarse grid, and to then upsample the computational grid as the iterations progress. In `ust-sart`, the array `ups` is defined which contains the upsample factors for each iteration, relative to the starting grid size. For example:
+```
+ups        = [1, 1, 2, 2, 4, 4]; % upsampling factors for each iteration
+Nit        = length(ups);  % number of iterations
+dx0        = 8e-3;         % step size for iteration 1 [m]
+``` 
+In this case, six iterations would be performed, starting with a step size of 8 mm, progressing to a step size of 4 mm, and finishing with a step size of 2 mm. For every iteration, the physical length of the computational grid remains the same, and the sound speed map is interpolated to match the required grid step size.
+
 ## Getting Started
 
 Clone this repository in a terminal: `git clone https://github.com/ucl-bug/ust-sart.git`
@@ -69,7 +79,7 @@ sart        = SartExperiment(L, element_positions, delta_tof, temperature);
 sart.plotSetup;
 
 % Perform reconstruction
-ups        = [1, 1];       % upsampling factors
+ups        = [1, 1, 2, 4]; % upsampling factors for each iteration
 Nit        = length(ups);  % number of iterations
 dx0        = 4e-3;         % step size for iteration 1 [m]
 init_c_val = sart.c_water; % sound speed value for homogeneous initial estimate [m/s]
