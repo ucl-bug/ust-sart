@@ -71,9 +71,8 @@ load('example_delta_tof');
 delta_tof(logical(tril(ones(size(delta_tof)), -1))) = NaN;
 
 % Initialise sart object
-L           = 0.23; % grid length [m]
 temperature = 20;   % water temperature [degC]
-sart        = SartExperiment(L, element_positions, delta_tof, temperature);
+sart        = SartExperiment(element_positions, delta_tof, temperature);
 
 % Plot setup and data
 sart.plotSetup;

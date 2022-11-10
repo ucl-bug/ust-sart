@@ -11,9 +11,6 @@
 %     sart = SartExperiment(L, element_positions, delta_tof, temperature)
 %
 % INPUTS:
-%     L                 - [numeric] scalar grid length [m]. Applies to both
-%                         x and y dimensions. Should be set to ~10 mm
-%                         larger than the array size.
 %     element_positions - [numeric] N x 2 matrix containing the cartesian
 %                         coordinates of each transducer element. The ring
 %                         array should be centred on (0, 0).
@@ -44,7 +41,6 @@ classdef SartExperiment < handle
         c_vec         = [0, 0] % coordinates of array centre [m]
         
         % Properties populated in the class constructor
-        L                % user selected grid length [m] (only used to define Lx)
         detect           % structure for the detector coordinates and X/Y grid vectors
         delta_tof        % NxN input time of flight data matix
         temperature      % temperature of water during UST data acuisition [deg C]
@@ -58,6 +54,7 @@ classdef SartExperiment < handle
         hamming          % boolean controlling whether to apply a hamming window when distributing errors along ray paths
 
         % Derived static properties 
+        L                % physical grid length [m], automatically set to (4*obj.dx0) mm larger than reconstruction circle obj.d
         Lx               % discretised grid length [m]
         N                % Number of transducer elements in the array
         r                % reconstruction circle radius [m]
@@ -75,9 +72,8 @@ classdef SartExperiment < handle
         dxs              % grid step size for each iteration [m]
     end
     methods
-        function obj = SartExperiment(L, element_positions, delta_tof, temperature)
+        function obj = SartExperiment(element_positions, delta_tof, temperature)
             % store data
-            obj.L           = L;
             obj.delta_tof   = delta_tof;
             obj.temperature = temperature;
             obj.c_water     = waterSoundSpeed(temperature);

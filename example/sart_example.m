@@ -10,15 +10,14 @@ load('example_delta_tof');
 delta_tof(logical(tril(ones(size(delta_tof)), -1))) = NaN;
 
 % Initialise sart object
-L           = 0.23; % grid length [m]
 temperature = 20;   % water temperature [degC]
-sart        = SartExperiment(L, element_positions, delta_tof, temperature);
+sart        = SartExperiment(element_positions, delta_tof, temperature);
 
 % Plot setup and data
 sart.plotSetup;
 
 % Perform reconstruction
-ups        = [1, 1, 2, 4]; % upsampling factors for each iteration
+ups        = [1, 2, 3, 4]; % upsampling factors for each iteration
 Nit        = length(ups);  % number of iterations
 dx0        = 4e-3;         % step size for iteration 1 [m]
 init_c_val = sart.c_water; % sound speed value for homogeneous initial estimate [m/s]

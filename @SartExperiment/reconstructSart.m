@@ -74,10 +74,14 @@ obj.estimates   = zeros(obj.max_Nx, obj.max_Nx, obj.Nit);
 obj.corrections = zeros(obj.max_Nx, obj.max_Nx, obj.Nit);
 obj.dxs         = NaN * ones(1, obj.Nit);
 
+% set the physical grid length [m]
+pad   = 2; % grid points to pad outside reconstruction circle
+obj.L = obj.d + (obj.dx0 * pad * 2);
+
 % Round the grid length to fit an odd integer number of grid points
 obj.Nx = 2 * ceil(obj.L / (2 * obj.dx0)) + 1;
 
-% calculate the actual discretised grid length in [m]
+% calculate the actual discretised grid length [m]
 obj.Lx = (obj.Nx - 1) * obj.dx0;
 
 % create the grid vector for the initial estimate sound speed map
@@ -107,7 +111,7 @@ for idx = 1:obj.Nit
     grid_x_up = (0:(obj.Nx-1)) * obj.dx;
     grid_x_up = grid_x_up - grid_x_up(ceil(obj.Nx / 2));
 
-    tic
+    tic;
     disp(['Iter ', num2str(idx), ' / ', num2str(obj.Nit), ' dx = ', num2str(1e3*obj.dx), ' mm, Nx = ', num2str(obj.Nx), ' pts']);
     disp('Reconstructing...');
 
@@ -137,8 +141,6 @@ for idx = 1:obj.Nit
     xlabel('x-position [mm]');
     ylabel('y-position [mm]');
     ylabel(c, 'Sound Speed [m/s]')
-    hold on
-    plot(obj.detect.x_vec, obj.detect.y_vec, 'r.');
     axis image
 
     subplot(2, 2, 3);
