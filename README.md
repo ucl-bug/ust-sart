@@ -89,5 +89,5 @@ sart.reconstructSart(init_c_val, recon_d, Nit, dx0, ups, hamming=hamming);
 % plot final estimate
 figure; imagesc(squeeze(sart.estimates(:,:,end))); axis image;
 ```
-
+![setup_example](https://github.com/ucl-bug/ust-sart/blob/main/setup_example.png)
 ![recon_example](https://github.com/ucl-bug/ust-sart/blob/main/recon_example.png)
