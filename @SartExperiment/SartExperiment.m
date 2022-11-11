@@ -70,6 +70,7 @@ classdef SartExperiment < handle
         corrections      % weighted correction matrix for each iteration [relative slowness, s/m]
         rmses            % Room mean square error for each iteration [us]
         dxs              % grid step size for each iteration [m]
+        Nxs              % grid length [pts] for each iteration
     end
     methods
         function obj = SartExperiment(element_positions, delta_tof, temperature)
@@ -91,9 +92,11 @@ classdef SartExperiment < handle
         
         plotSetup(obj)
         reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
+        plotReconResult(obj, idx, options)
         [new_c_est, weighted_correction, rmse] = performSartIteration(obj, c_est, options)
         delta_d_ijm                            = interpolateRaySection(obj, m_xvec, m_yvec, mdx)
         [m_xvec, m_yvec, M, deltaS]            = findRaySections(obj, tdx, rdx)
+        saveReconResult(obj)
         
     end
 end

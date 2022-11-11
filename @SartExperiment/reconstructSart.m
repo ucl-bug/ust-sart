@@ -12,12 +12,12 @@ function reconstructSart(obj, init_c_val, recon_d, Nit, dx0, upsample_factors, o
 %
 % USAGE:
 %     reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors)
-%     reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, Hamming=1)
+%     reconstructSart(init_c_val, Nit, dx0, upsample_factors, Hamming=1)
 %     
 % INPUTS:
 %     obj              - object, instance of the SartExperiment class
 %     init_c_val       - [numeric] Scalar sound speed value for the initial estimate [m/s].
-%     recon_d          - [numeric] Scalar diameter of reconstruction circle [m]
+%     recon_d          - [numeric] Scalar diameter of reconstruction circle [m] 
 %     Nit              - [numeric] Integer number of iterations to perform
 %     dx0              - [numeric] Grid step size for the first iteration [m]
 %     upsample_factors - [numeric] 1 x Nit array containing the up-sample
@@ -73,6 +73,7 @@ obj.rmses       = NaN * ones(1, obj.Nit);
 obj.estimates   = zeros(obj.max_Nx, obj.max_Nx, obj.Nit);
 obj.corrections = zeros(obj.max_Nx, obj.max_Nx, obj.Nit);
 obj.dxs         = NaN * ones(1, obj.Nit);
+obj.Nxs         = NaN * ones(1, obj.Nit);
 
 % set the physical grid length [m]
 pad   = 2; % grid points to pad outside reconstruction circle
@@ -110,6 +111,7 @@ for idx = 1:obj.Nit
     obj.Nx    = 2 * ceil(obj.Lx / (2 * obj.dx)) + 1;
     grid_x_up = (0:(obj.Nx-1)) * obj.dx;
     grid_x_up = grid_x_up - grid_x_up(ceil(obj.Nx / 2));
+    obj.Nxs(idx) = obj.Nx;
 
     tic;
     disp(['Iter ', num2str(idx), ' / ', num2str(obj.Nit), ' dx = ', num2str(1e3*obj.dx), ' mm, Nx = ', num2str(obj.Nx), ' pts']);
@@ -132,42 +134,7 @@ for idx = 1:obj.Nit
     obj.corrections(1:obj.Nx, 1:obj.Nx, idx) = weighted_correction;
 
     % Update the plot
-    figure(fig1);
-    subplot(2, 2, 1);
-    imagesc(obj.grid_x, obj.grid_x, new_c_est);
-    c = colorbar;
-    colormap(getBatlow());
-    title(['Iteration ', num2str(idx), ' / ', num2str(obj.Nit),]);
-    xlabel('x-position [mm]');
-    ylabel('y-position [mm]');
-    ylabel(c, 'Sound Speed [m/s]')
-    axis image
-
-    subplot(2, 2, 3);
-    imagesc(obj.grid_x, obj.grid_x, weighted_correction);
-    c = colorbar;
-    colormap(getBatlow());
-    title('Weighted Correction');
-    xlabel('x-position [mm]');
-    ylabel('y-position [mm]');
-    ylabel(c, 'Relative Slowness')
-    axis image
-
-    subplot(2, 2, 2);
-    h = semilogy(1:obj.Nit, obj.rmses, 'k-');
-    h.Marker = '.';
-    h.MarkerEdgeColor = 'r';
-    xlabel('Iteration');
-    ylabel('RMSE [us]');
-
-    subplot(2, 2, 4);
-    h = plot(1:obj.Nit, obj.dxs*1e3, 'k-');
-    h.Marker = '.';
-    h.MarkerEdgeColor = 'r';
-    xlabel('Iteration');
-    ylabel('Grid Step Size [mm]');    
-
-    drawnow
+    plotReconResult(obj, Iter=idx, Handle=fig1)
 
     % Display iteration time stat
     disp(['Completed in ', num2str(toc)]);   
