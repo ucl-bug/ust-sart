@@ -96,7 +96,7 @@ sart.saveReconResult;
 
 ## Time of Arrival Picking
 
-The function `pickFirstMotionAIC` is included in `\time_of_arrival_picking`, along with an example of its usage. This function estimates which sample in a signal array corresponds to the 'first-motion' (arrival) of the wave packet. An example of how this could be used to build the input data matrix `delta_tof`, is provided here:
+The function `pickFirstMotionAIC` is included in `\time_of_arrival_picking`, along with a script containing examples of its usage - `time_of_arrival_example.m`. This function estimates which sample in a signal array corresponds to the 'first-motion' (arrival) of the wave packet. An example of how this could be used to build the input data matrix `delta_tof`, is provided here:
 
 ```
 % watershot: (Ntdx, Nrdx) UST dataset through the water only
@@ -105,7 +105,7 @@ The function `pickFirstMotionAIC` is included in `\time_of_arrival_picking`, alo
 % Nrdx:      Number of receivers
 % dt:        Time sample length [s]
 
-delta_tof = zeros(Ntdx, Nrdx)
+delta_tof = NaN * ones(Ntdx, Nrdx)
 for tdx = 1:Ntdx
     for rdx = 1:Nrdx
         i_water   = pickFirstMotionAIC( squeeze(watershot(tdx, rdx,:)) );
