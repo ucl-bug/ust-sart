@@ -5,8 +5,6 @@ This code is intended to be used to reconstruct ultrasound tomography (UST) data
 
 **Note:** This code does not handle absorption or density, and only inverts for sound speed.
 
-**Note:** This code does not provide functions for time-of-flight picking.
-
 ## Background
 
 - This inverse problem cannot be solved by direct matrix inversion because the coefficient matrix is too large to be stored in memory.
@@ -94,3 +92,29 @@ sart.saveReconResult;
 ```
 ![setup_example](https://github.com/ucl-bug/ust-sart/blob/main/setup_example.png)
 ![recon_example](https://github.com/ucl-bug/ust-sart/blob/main/recon_example.png)
+
+
+## Time of Arrival Picking
+
+The function `pickFirstMotionAIC` is included in `\time_of_arrival_picking`, along with an example of its usage. This function estimates which sample in a signal array corresponds to the 'first-motion' (arrival) of the wave packet. An example of how this could be used to build the input data matrix `delta_tof`, is provided here:
+
+```
+% watershot: (Ntdx, Nrdx) UST dataset through the water only
+% phantom:   (Ntdx, Nrdx) UST dataset through the phantom
+% Ntdx:      Number of transmitters
+% Nrdx:      Number of receivers
+% dt:        Time sample length [s]
+
+delta_tof = zeros(Ntdx, Nrdx)
+for tdx = 1:Ntdx
+    for rdx = 1:Nrdx
+        i_water   = pickFirstMotionAIC( squeeze(watershot(tdx, rdx,:)) );
+        i_phantom = pickFirstMotionAIC( squeeze(phantom(tdx, rdx,:))   );
+        i_delta   = i_phantom - i_water;
+        t_delta   = i_delta * dt;
+        delta_tof(tdx, rdx) = t_delta
+    end
+end
+```
+
+![tof_pick_example](https://github.com/ucl-bug/ust-sart/blob/main/tof_pick_example.png)

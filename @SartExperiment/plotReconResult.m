@@ -57,6 +57,8 @@ function plotSingleIter(obj, idx, handle, cRange)
 Nx = obj.Nxs(idx);
 
 figure(handle);
+clf(handle, 'reset');
+keyboard
 subplot(2, 2, 1);
 imagesc(obj.grid_x, obj.grid_x, obj.estimates(1:Nx, 1:Nx, idx), cRange);
 c = colorbar;
