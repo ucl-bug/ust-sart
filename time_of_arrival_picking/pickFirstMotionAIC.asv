@@ -8,7 +8,8 @@ function minAICIndex = pickFirstMotionAIC(data, options)
 %     is returned. The optional input IgnoreRingDown can be used to prevent
 %     the AIC from late-picking-errors after the main peak. The optional
 %     input NoiseLevel can be used to add gaussian noise to the signal to
-%     reduce susceptibility to early-picking errors.
+%     reduce susceptibility to early-picking errors. Both of these are
+%     especially useful for experimental data.
 %     
 % USAGE:
 %     minAICInd = pickFirstMotionAIC(data)
@@ -56,7 +57,8 @@ end
 % add Gaussian noise relative to the maximum value in the signal
 rng('default');
 rng(1);
-noise = options.NoiseLevel * max(data(:)) * randn(size(data));
+%noise = options.NoiseLevel * max(data) * randn(size(data));
+noise = options.NoiseLevel * max(data(:)) * randn(size(data)); % Xingmin/Ben correction 6/12/22
 data  = noise + data;
 
 % calculate the AIC
@@ -78,9 +80,11 @@ if options.IgnoreRingDown
         AIC(sdx,i_stop+1:end) = NaN;
     end
 end
+% AIC = AIC(1:i_stop);
 
 % get signal arrival from minimum AIC, constrained to be less than i_stop
-[~, minAICIndex] = min(AIC, [], 2, 'omitnan');
+%[~, minAICIndex] = min(AIC(1:i_stop), [], 2);
+[~, minAICIndex] = min(AIC, [], 2, 'omitnan'); % Xingmin/Ben correction 6/12/22
 
 % plot
 if options.Plot
