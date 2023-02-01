@@ -58,7 +58,6 @@ Nx = obj.Nxs(idx);
 
 figure(handle);
 clf(handle, 'reset');
-keyboard
 subplot(2, 2, 1);
 imagesc(1e3*obj.grid_x, 1e3*obj.grid_x, obj.estimates(1:Nx, 1:Nx, idx), cRange);
 c = colorbar;

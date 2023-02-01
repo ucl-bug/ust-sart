@@ -71,6 +71,11 @@ classdef SartExperiment < handle
         rmses            % Room mean square error for each iteration [us]
         dxs              % grid step size for each iteration [m]
         Nxs              % grid length [pts] for each iteration
+
+        % Timers for feature development
+        ray_sect_timer    = 0;
+        interpolate_timer = 0;
+        total_timer       = 0;
     end
     methods
         function obj = SartExperiment(element_positions, delta_tof, temperature)

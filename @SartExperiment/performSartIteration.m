@@ -73,8 +73,10 @@ for tdx = 1:N
         if obj.ray_mask(tdx, rdx)         
             
             % Define the ray as a series of ray sections
+            tic
             [m_xvec, m_yvec, M, deltaS] = findRaySections(obj, tdx, rdx);
-            
+            obj.ray_sect_timer = obj.ray_sect_timer + toc;
+
             % If ray doesn't intersect the circle, skip to next ray
             if M == 0
                 continue
@@ -92,11 +94,13 @@ for tdx = 1:N
             end  
     
             % Find contribution of each image pixels to each ray section
+            tic
             for mdx = 1:M
                 delta_d_ijm = interpolateRaySection(obj, m_xvec, m_yvec, mdx);
                 d_ijm = d_ijm + delta_d_ijm;
                 t_ij  = t_ij + (delta_d_ijm * ham_win(mdx));
             end
+            obj.interpolate_timer = obj.interpolate_timer + toc;
     
             % calculate physical length ray spent in each pixel (deltaS is
             % the physical length of each ray section)

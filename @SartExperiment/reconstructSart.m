@@ -92,7 +92,7 @@ obj.grid_x = obj.grid_x - obj.grid_x(ceil(obj.Nx / 2));
 % -----------------------
 % RUN RECONSTRUCTION
 % -----------------------
-
+disp('----------------------------------------------------------');
 fig1 = figure;
 for idx = 1:obj.Nit
 
@@ -113,7 +113,7 @@ for idx = 1:obj.Nit
     grid_x_up = grid_x_up - grid_x_up(ceil(obj.Nx / 2));
     obj.Nxs(idx) = obj.Nx;
 
-    tic;
+    t_iter = tic;
     disp(['Iter ', num2str(idx), ' / ', num2str(obj.Nit), ' dx = ', num2str(1e3*obj.dx), ' mm, Nx = ', num2str(obj.Nx), ' pts']);
     disp('Reconstructing...');
 
@@ -137,7 +137,16 @@ for idx = 1:obj.Nit
     plotReconResult(obj, Iter=idx, Handle=fig1)
 
     % Display iteration time stat
-    disp(['Completed in ', num2str(toc)]);   
+    obj.total_timer = obj.total_timer + toc(t_iter);
+    disp(['Completed in ', num2str(toc(t_iter))]);   
 
 end
+
+disp('----------------------------------------------------------');
+disp(['Time for breaking rays into sections: ', num2str(obj.ray_sect_timer), ' s']);
+disp(['Time for calculating pixel weights:   ', num2str(obj.interpolate_timer), ' s']);
+disp(['Total time:                           ', num2str(obj.total_timer), ' s']);
+disp('----------------------------------------------------------');
+
+
 end
