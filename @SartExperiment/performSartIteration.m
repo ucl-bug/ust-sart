@@ -50,7 +50,6 @@ arguments
     options.beta = 1;
 end
 
-N  = obj.N;
 Nx = obj.Nx;
 
 % convert the sound speed estimate to a relative-slowness estimate
@@ -62,87 +61,74 @@ correction  = zeros(Nx, Nx);
 sum_weights = zeros(Nx, Nx);
 ses         = NaN * ones(Nx, Nx); % empty array for Squared detector ErrorS
 
-for tdx = 1:N
-    
-    % Define receiver array
-    receivers = 1:N;
-    receivers = receivers(receivers ~= tdx);
-    
-    for rdx = receivers
-        % only proceed if there is data available for this ray    
-        if obj.ray_mask(tdx, rdx)         
+[transmitters, receivers] = find(obj.ray_mask);
+Nray  = nnz(obj.ray_mask); % number of rays
+
+% Loop over rays
+for idx = 1:Nray
+    tdx = transmitters(idx);
+    rdx = receivers(idx);  
             
-            % Define the ray as a series of ray sections
-            tic
-            [m_xvec, m_yvec, M, deltaS] = findRaySections(obj, tdx, rdx);
-            obj.ray_sect_timer = obj.ray_sect_timer + toc;
+    % Define the ray as a series of ray sections
+    tic
+    [m_xvec, m_yvec, M, deltaS] = findRaySections(obj, tdx, rdx);
+    obj.ray_sect_timer = obj.ray_sect_timer + toc;
 
-            % If ray doesn't intersect the circle, skip to next ray
-            if M == 0
-                continue
-            end
-            
-            % initialise dijm and tijm matrix (for accumulating image pixel contributions to the rays)
-            d_ijm = zeros(Nx, Nx);
-            t_ij  = zeros(Nx, Nx); 
+    % If ray doesn't intersect the circle, skip to next ray
+    if M == 0
+        continue
+    end
     
-            % Create hamming window
-            if obj.hamming
-                ham_win = getWin(M, 'Hamming');
-            else
-                ham_win = ones(1, M);
-            end  
+    % Find contribution of each image pixel to the ray
+    [d_ijm, t_ij] = calculatePixelWeights(obj, m_xvec, m_yvec);
     
-            % Find contribution of each image pixels to each ray section
-            tic
-            for mdx = 1:M
-                delta_d_ijm = interpolateRaySection(obj, m_xvec, m_yvec, mdx);
-                d_ijm = d_ijm + delta_d_ijm;
-                t_ij  = t_ij + (delta_d_ijm * ham_win(mdx));
-            end
-            obj.interpolate_timer = obj.interpolate_timer + toc;
-    
-            % calculate physical length ray spent in each pixel (deltaS is
-            % the physical length of each ray section)
-            a_ij = d_ijm * deltaS;
-    
-            %  calculate tof estimate for ith ray: multiply pixelwise ray distances by relative slowness
-            tof_est_i = sum(a_ij .* s_est, 'all'); 
-            diff_i    = obj.delta_tof(tdx, rdx) - tof_est_i;
+    % t_ij is equal to d_ijm if hamming-weighting is turned off
+    if ~obj.hamming
+        t_ij = d_ijm;
+    end
+    obj.interpolate_timer = obj.interpolate_timer + toc;
 
-            % store the squared error in microseconds
-            ses(tdx, rdx) = (diff_i * 1e6) ^ 2; 
+    % calculate physical length ray spent in each pixel (deltaS is
+    % the physical length of each ray section)
+    a_ij = d_ijm * deltaS;
 
-            phys_len_i = sum(a_ij, 'all');
-            % eqn 34 kak/slaney 1988 p.291
-            correction = correction + (t_ij * (diff_i / phys_len_i));
-            % denominator eqn 32
-            sum_weights = sum_weights + d_ijm;
-    
-            % sanity check that sum equals the actual number of sections in ray
-            if sum(d_ijm, 'all') - (M - 1) > 1e-6
-                error('check sum matches physical length of ray')
-            end
+    %  calculate tof estimate for ith ray: multiply pixelwise ray distances by relative slowness
+    tof_est_i = sum(a_ij .* s_est, 'all'); 
+    diff_i    = obj.delta_tof(tdx, rdx) - tof_est_i;
 
-            plotting = 0;
-            if plotting
-                clf(gcf);
-                subplot(1, 2, 1);
-                imagesc(t_ij);
-                title(['tx ', num2str(tdx), ' rx ', num2str(rdx)])
-                axis image
-                title('Ray Distance Matrix')
-    
-                subplot(1, 2, 2);
-                imagesc(correction);
-                title(['tx ', num2str(tdx), ' rx ', num2str(rdx)])
-                axis image     
-                title('Correction Matrix');
-                drawnow
-            end
-        end
+    % store the squared error in microseconds
+    ses(tdx, rdx) = (diff_i * 1e6) ^ 2; 
+
+    phys_len_i = sum(a_ij, 'all');
+    % eqn 34 kak/slaney 1988 p.291
+    correction = correction + (t_ij * (diff_i / phys_len_i));
+
+    % denominator eqn 32
+    sum_weights = sum_weights + d_ijm;
+
+    % sanity check that sum equals the actual number of sections in ray
+    if sum(d_ijm, 'all') - (M - 1) > 1e-3
+        error('check sum matches physical length of ray')
+    end
+
+    plotting = 0;
+    if plotting
+        clf(gcf);
+        subplot(1, 2, 1);
+        imagesc(t_ij);
+        title(['tx ', num2str(tdx), ' rx ', num2str(rdx)])
+        axis image
+        title('Ray Distance Matrix')
+
+        subplot(1, 2, 2);
+        imagesc(correction);
+        title(['tx ', num2str(tdx), ' rx ', num2str(rdx)])
+        axis image     
+        title('Correction Matrix');
+        drawnow
     end
 end
+
 
 % calculate root mean square error for this iteration
 mse  = mean(ses, 'all', 'omitnan');

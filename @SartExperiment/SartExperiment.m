@@ -56,7 +56,6 @@ classdef SartExperiment < handle
         % Derived static properties 
         L                % physical grid length [m], automatically set to (4*obj.dx0) mm larger than reconstruction circle obj.d
         Lx               % discretised grid length [m]
-        N                % Number of transducer elements in the array
         r                % reconstruction circle radius [m]
         max_Nx           % maximum number of grid points required for multi-stage reconstruction
         ray_mask         % boolean mask NxN stating which rays should be included in the reconstruction
@@ -83,23 +82,19 @@ classdef SartExperiment < handle
             obj.delta_tof   = delta_tof;
             obj.temperature = temperature;
             obj.c_water     = waterSoundSpeed(temperature);
-            obj.ray_mask    = ~isnan(delta_tof);               
+            obj.ray_mask    = ~isnan(delta_tof);
 
             % cartesian coordinates of detectors
             obj.detect.centroids = element_positions;
             obj.detect.x_vec     = obj.detect.centroids(:,1);
             obj.detect.y_vec     = obj.detect.centroids(:,2);   
-
-            % compute number of transducer elements
-            obj.N = size(delta_tof, 1);
-
         end
         
         plotSetup(obj)
         reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
         plotReconResult(obj, idx, options)
         [new_c_est, weighted_correction, rmse] = performSartIteration(obj, c_est, options)
-        delta_d_ijm                            = interpolateRaySection(obj, m_xvec, m_yvec, mdx)
+        [d_ijm, t_ij]                          = calculatePixelWeights(obj, m_Xvec, m_yvec);
         [m_xvec, m_yvec, M, deltaS]            = findRaySections(obj, tdx, rdx)
         saveReconResult(obj)
         
