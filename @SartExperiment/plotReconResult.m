@@ -60,7 +60,7 @@ figure(handle);
 clf(handle, 'reset');
 keyboard
 subplot(2, 2, 1);
-imagesc(obj.grid_x, obj.grid_x, obj.estimates(1:Nx, 1:Nx, idx), cRange);
+imagesc(1e3*obj.grid_x, 1e3*obj.grid_x, obj.estimates(1:Nx, 1:Nx, idx), cRange);
 c = colorbar;
 colormap(getColorMap);
 title(['Iteration ', num2str(idx), ' / ', num2str(obj.Nit),]);
@@ -70,7 +70,7 @@ ylabel(c, 'Sound Speed [m/s]')
 axis image
 
 subplot(2, 2, 3);
-imagesc(obj.grid_x, obj.grid_x, obj.corrections(1:Nx, 1:Nx, idx));
+imagesc(1e3*obj.grid_x, 1e3*obj.grid_x, obj.corrections(1:Nx, 1:Nx, idx));
 c = colorbar;
 colormap(getColorMap);
 title('Weighted Correction');
