@@ -33,6 +33,9 @@ function reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
 %                        circle [m]. If not supplied, uses the default
 %                        value calculated in the SartExperiment class
 %                        constructor.
+%     border_width     - [numeric] Integer number of dx0 grid points that
+%                        are prevented from updating at the edge of the
+%                        reconstruction circle to avoid spiking errors.
 %
 % REFERENCES:
 %     A. C. Kak and Malcolm Slaney, Principles of Computerized Tomographic
@@ -52,6 +55,7 @@ arguments
 
     options.hamming = 0;
     options.recon_d = obj.default_recon_d;
+    options.border_width = 1;
 end
 
 if options.recon_d > obj.default_recon_d
@@ -74,6 +78,7 @@ obj.dx0              = dx0;
 obj.upsample_factors = upsample_factors;
 obj.init_c_val       = init_c_val;
 obj.Nit              = Nit;
+obj.border_width     = options.border_width;
 
 % calculate maximum number of grid points required across all iterations
 max_up     = max(obj.upsample_factors);
@@ -134,7 +139,7 @@ for idx = 1:obj.Nit
         c_est = interp2(obj.grid_x, obj.grid_x, c_est, grid_x_up, grid_x_up', 'cubic');
     end
 
-    % active the new upsampled grid vector
+    % activate the new upsampled grid vector
     obj.grid_x = grid_x_up;
     
     % calculate new sound speed estimate

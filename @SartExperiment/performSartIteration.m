@@ -129,14 +129,23 @@ for idx = 1:Nray
     end
 end
 
-
 % calculate root mean square error for this iteration
 mse  = mean(ses, 'all', 'omitnan');
 rmse = sqrt(mse); 
 
+% calculate mask for the pixels on the reconstruction circle border
+[maskX, maskY] = meshgrid(obj.grid_x, obj.grid_x);
+inside = sqrt(maskX.^2 + maskY .^2) < ((obj.recon_d / 2) - obj.border_width * obj.dx0);
+border = inside ~= (sum_weights > 0);
+
+% Prevent pixels on border for being included in the update
+% (Especially important for first few iterations to avoid spiking artefact)
+sum_weights(border) = 0;
+
 % calculate the weighted correction matrix
 weighted_correction = correction ./ sum_weights;
-weighted_correction(isnan(weighted_correction)) = 0;
+% weighted_correction(isnan(weighted_correction)) = 0;
+weighted_correction(sum_weights == 0) = 0;
 
 % Calculate the new slowness estimate: apply the correction matrix from all rays
 new_s_est = s_est + (options.beta * weighted_correction);

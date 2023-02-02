@@ -20,14 +20,16 @@ recon_d = sart.default_recon_d;
 sart.plotSetup(recon_d=recon_d);
 
 % Perform reconstruction
-ups        = [1 * ones(1, 22), ...
-              2 * ones(1, 17), ...
-              4 * ones(1, 15)]; % upsampling factors for each iteration
-Nit        = length(ups);  % number of iterations
-dx0        = 4e-3;         % step size for iteration 1 [m]
-init_c_val = sart.c_water; % sound speed value for homogeneous initial estimate [m/s]
-hamming    = 1;            % boolean controlling whether hamming window is used
-sart.reconstructSart(init_c_val, Nit, dx0, ups, recon_d=0.25, hamming=hamming);
+ups          = [1 * ones(1, 45), ...
+                2 * ones(1, 30),...
+                4]; % upsampling factors for each iteration
+Nit          = length(ups);  % number of iterations
+dx0          = 4e-3;         % step size for iteration 1 [m]
+init_c_val   = sart.c_water; % sound speed value for homogeneous initial estimate [m/s]
+hamming      = 1;            % boolean controlling whether hamming window is used
+border_width = 2;            % width of non-updating region at edge of reconstruction circle (integer multiples of dx0)
+sart.reconstructSart(init_c_val, Nit, dx0, ups, ...
+    recon_d=recon_d, border_width=border_width, hamming=hamming);
 
 % plot final estimate and save
 sart.plotReconResult(cRange=[1425, 1580]);

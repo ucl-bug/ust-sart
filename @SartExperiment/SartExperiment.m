@@ -53,6 +53,7 @@ classdef SartExperiment < handle
         upsample_factors % integer up sample factors used for each iteration (relative to dx0), must be 1 or a power of 2
         hamming          % boolean controlling whether to apply a hamming window when distributing errors along ray paths
         recon_d          % scalar diameter of reconstruction circle [m]
+        border_width     % number of pixels at edge of circle to prevent from updating
 
         % Derived static properties 
         L                % physical grid length [m], automatically set to (4*obj.dx0) mm larger than reconstruction circle obj.d
