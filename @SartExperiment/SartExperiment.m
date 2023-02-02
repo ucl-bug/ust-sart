@@ -44,14 +44,15 @@ classdef SartExperiment < handle
         detect           % structure for the detector coordinates and X/Y grid vectors
         delta_tof        % NxN input time of flight data matix
         temperature      % temperature of water during UST data acuisition [deg C]
+        default_recon_d  % default reconstruction circle diameter [m]
 
         % Properties populated in the reconstructSart() method
         init_c_val       % scalar sound speed value used for homogeneous initial estimate [m/s]
-        d                % reconstruction circle diameter [m]
         Nit              % number of iterations
         dx0              % grid step size for first iteration [m]
         upsample_factors % integer up sample factors used for each iteration (relative to dx0), must be 1 or a power of 2
         hamming          % boolean controlling whether to apply a hamming window when distributing errors along ray paths
+        recon_d          % scalar diameter of reconstruction circle [m]
 
         % Derived static properties 
         L                % physical grid length [m], automatically set to (4*obj.dx0) mm larger than reconstruction circle obj.d
@@ -87,7 +88,11 @@ classdef SartExperiment < handle
             % cartesian coordinates of detectors
             obj.detect.centroids = element_positions;
             obj.detect.x_vec     = obj.detect.centroids(:,1);
-            obj.detect.y_vec     = obj.detect.centroids(:,2);   
+            obj.detect.y_vec     = obj.detect.centroids(:,2);
+
+            % calculate default reconstruction circle diameter
+            min_dist = min(sqrt( obj.detect.x_vec.^2 + obj.detect.y_vec.^2 ));
+            obj.default_recon_d = min_dist * 2 * 0.9;
         end
         
         plotSetup(obj)

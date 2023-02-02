@@ -13,8 +13,11 @@ delta_tof(logical(tril(ones(size(delta_tof)), -1))) = NaN;
 temperature = 20;   % water temperature [degC]
 sart        = SartExperiment(element_positions, delta_tof, temperature);
 
+% Use default reconstruction circle diameter, calculated for this geometry
+recon_d = sart.default_recon_d;
+
 % Plot setup and data
-sart.plotSetup;
+sart.plotSetup(recon_d=recon_d);
 
 % Perform reconstruction
 ups        = [1 * ones(1, 22), ...
@@ -24,8 +27,7 @@ Nit        = length(ups);  % number of iterations
 dx0        = 4e-3;         % step size for iteration 1 [m]
 init_c_val = sart.c_water; % sound speed value for homogeneous initial estimate [m/s]
 hamming    = 1;            % boolean controlling whether hamming window is used
-recon_d    = 0.135;        % diameter of reconstruction circle [m]
-sart.reconstructSart(init_c_val, recon_d, Nit, dx0, ups, hamming=hamming);
+sart.reconstructSart(init_c_val, Nit, dx0, ups, recon_d=0.25, hamming=hamming);
 
 % plot final estimate and save
 sart.plotReconResult(cRange=[1425, 1580]);

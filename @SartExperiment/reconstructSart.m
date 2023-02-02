@@ -1,4 +1,4 @@
-function reconstructSart(obj, init_c_val, recon_d, Nit, dx0, upsample_factors, options)
+function reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
 %RECONSTRUCTSART runs an interative SART reconstruction for sound speed inversion of time-of-flight data.
 %
 % DESCRIPTION:
@@ -17,7 +17,7 @@ function reconstructSart(obj, init_c_val, recon_d, Nit, dx0, upsample_factors, o
 % INPUTS:
 %     obj              - object, instance of the SartExperiment class
 %     init_c_val       - [numeric] Scalar sound speed value for the initial estimate [m/s].
-%     recon_d          - [numeric] Scalar diameter of reconstruction circle [m] 
+
 %     Nit              - [numeric] Integer number of iterations to perform
 %     dx0              - [numeric] Grid step size for the first iteration [m]
 %     upsample_factors - [numeric] 1 x Nit array containing the up-sample
@@ -29,6 +29,10 @@ function reconstructSart(obj, init_c_val, recon_d, Nit, dx0, upsample_factors, o
 %     hamming          - [boolean] Set to true to use a Hamming window when
 %                        distributing errors along each ray
 %                        (t_ij in eqn 35 section 7.4 in Kak&Slaney1988)
+%     recon_d          - [numeric] scalar diameter of the reconstruction
+%                        circle [m]. If not supplied, uses the default
+%                        value calculated in the SartExperiment class
+%                        constructor.
 %
 % REFERENCES:
 %     A. C. Kak and Malcolm Slaney, Principles of Computerized Tomographic
@@ -42,12 +46,20 @@ function reconstructSart(obj, init_c_val, recon_d, Nit, dx0, upsample_factors, o
 arguments
     obj
     init_c_val
-    recon_d
     Nit
     dx0
     upsample_factors
 
     options.hamming = 0;
+    options.recon_d = obj.default_recon_d;
+end
+
+if options.recon_d > obj.default_recon_d
+    warning(['Reconstruction circle diameter ', num2str(1e3*options.recon_d), ...
+        ' mm is large. The circle should cover the expected diameter of', ...
+        ' the reconstructed object only. Reduce this value to less than', ...
+        num2str(1e3*obj.default_recon_d), ...
+        ' mm to increase reconstruction speed']);
 end
 
 % -----------------------
@@ -55,8 +67,8 @@ end
 % -----------------------
 
 % Store values
-obj.d                = recon_d;
-obj.r                = obj.d / 2;
+obj.recon_d          = options.recon_d;
+obj.r                = obj.recon_d / 2;
 obj.hamming          = options.hamming;
 obj.dx0              = dx0;
 obj.upsample_factors = upsample_factors;
@@ -77,7 +89,7 @@ obj.Nxs         = NaN * ones(1, obj.Nit);
 
 % set the physical grid length [m]
 pad   = 2; % grid points to pad outside reconstruction circle
-obj.L = obj.d + (obj.dx0 * pad * 2);
+obj.L = obj.recon_d + (obj.dx0 * pad * 2);
 
 % Round the grid length to fit an odd integer number of grid points
 obj.Nx = 2 * ceil(obj.L / (2 * obj.dx0)) + 1;
