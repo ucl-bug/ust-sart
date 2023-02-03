@@ -54,7 +54,7 @@ Nx = obj.Nx;
 
 % convert the sound speed estimate to a relative-slowness estimate
 % deltaTOF_rel_water = d * relative_slowness
-s_est = ((1 ./ c_est) - (1 ./ obj.c_water));
+s_est = ((1 ./ c_est) - (1 ./ obj.ref_c));
 
 % initialise storage
 correction  = zeros(Nx, Nx);
@@ -93,7 +93,7 @@ for idx = 1:Nray
     a_ij = d_ijm * deltaS;
 
     %  calculate tof estimate for ith ray: multiply pixelwise ray distances by relative slowness
-    tof_est_i = sum(a_ij .* s_est, 'all'); 
+    tof_est_i = sum(a_ij .* s_est, 'all', 'omitnan'); 
     diff_i    = obj.delta_tof(tdx, rdx) - tof_est_i;
 
     % store the squared error in microseconds
@@ -151,7 +151,7 @@ weighted_correction(sum_weights == 0) = 0;
 new_s_est = s_est + (options.beta * weighted_correction);
 
 % Convert to a sound speed estimate
-new_c_est = obj.c_water ./ ((new_s_est .* obj.c_water) + 1);
+new_c_est = obj.ref_c ./ ((new_s_est .* obj.ref_c) + 1);
 
 % replace Nan with zeros
 new_c_est(isnan(new_c_est)) = 0;

@@ -43,11 +43,10 @@ classdef SartExperiment < handle
         % Properties populated in the class constructor
         detect           % structure for the detector coordinates and X/Y grid vectors
         delta_tof        % NxN input time of flight data matix
-        temperature      % temperature of water during UST data acuisition [deg C]
         default_recon_d  % default reconstruction circle diameter [m]
 
         % Properties populated in the reconstructSart() method
-        init_c_val       % scalar sound speed value used for homogeneous initial estimate [m/s]
+        ref_c            % reference background sound speed value (used for homogeneous initial estimate) [m/s]
         Nit              % number of iterations
         dx0              % grid step size for first iteration [m]
         upsample_factors % integer up sample factors used for each iteration (relative to dx0), must be 1 or a power of 2
@@ -60,8 +59,7 @@ classdef SartExperiment < handle
         Lx               % discretised grid length [m]
         r                % reconstruction circle radius [m]
         max_Nx           % maximum number of grid points required for multi-stage reconstruction
-        ray_mask         % boolean mask NxN stating which rays should be included in the reconstruction
-        c_water          % sound speed of water [m/s]        
+        ray_mask         % boolean mask NxN stating which rays should be included in the reconstruction    
 
         % Derived properties that change during reconstruction
         dx               % current step size for the current iteration
@@ -79,11 +77,9 @@ classdef SartExperiment < handle
         total_timer       = 0;
     end
     methods
-        function obj = SartExperiment(element_positions, delta_tof, temperature)
+        function obj = SartExperiment(element_positions, delta_tof)
             % store data
             obj.delta_tof   = delta_tof;
-            obj.temperature = temperature;
-            obj.c_water     = waterSoundSpeed(temperature);
             obj.ray_mask    = ~isnan(delta_tof);
 
             % cartesian coordinates of detectors
@@ -97,7 +93,7 @@ classdef SartExperiment < handle
         end
         
         plotSetup(obj)
-        reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
+        reconstructSart(obj, ref_c, Nit, dx0, upsample_factors, options)
         plotReconResult(obj, idx, options)
         [new_c_est, weighted_correction, rmse] = performSartIteration(obj, c_est, options)
         [d_ijm, t_ij]                          = calculatePixelWeights(obj, m_Xvec, m_yvec);

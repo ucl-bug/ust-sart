@@ -1,4 +1,4 @@
-function reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
+function reconstructSart(obj, ref_c, Nit, dx0, upsample_factors, options)
 %RECONSTRUCTSART runs an interative SART reconstruction for sound speed inversion of time-of-flight data.
 %
 % DESCRIPTION:
@@ -16,8 +16,7 @@ function reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
 %     
 % INPUTS:
 %     obj              - object, instance of the SartExperiment class
-%     init_c_val       - [numeric] Scalar sound speed value for the initial estimate [m/s].
-
+%     ref_c            - [numeric] Scalar reference (background) sound speed value [m/s].
 %     Nit              - [numeric] Integer number of iterations to perform
 %     dx0              - [numeric] Grid step size for the first iteration [m]
 %     upsample_factors - [numeric] 1 x Nit array containing the up-sample
@@ -48,7 +47,7 @@ function reconstructSart(obj, init_c_val, Nit, dx0, upsample_factors, options)
 
 arguments
     obj
-    init_c_val
+    ref_c
     Nit
     dx0
     upsample_factors
@@ -56,6 +55,14 @@ arguments
     options.hamming = 0;
     options.recon_d = obj.default_recon_d;
     options.border_width = 1;
+end
+
+border_proportion = (2 * (options.border_width * dx0)) / options.recon_d;
+if border_proportion > 0.15
+    warning(['The border is currently ', num2str(border_proportion*1e2), ...
+        ' % of the reconstruction circle. Pixels in the border are not',...
+        ' updated. Consider decreasing border_width, or increasing dx0.']);
+    fprintf('\n');
 end
 
 if options.recon_d > obj.default_recon_d
@@ -76,7 +83,7 @@ obj.r                = obj.recon_d / 2;
 obj.hamming          = options.hamming;
 obj.dx0              = dx0;
 obj.upsample_factors = upsample_factors;
-obj.init_c_val       = init_c_val;
+obj.ref_c            = ref_c;
 obj.Nit              = Nit;
 obj.border_width     = options.border_width;
 
@@ -102,6 +109,9 @@ obj.Nx = 2 * ceil(obj.L / (2 * obj.dx0)) + 1;
 % calculate the actual discretised grid length [m]
 obj.Lx = (obj.Nx - 1) * obj.dx0;
 
+% recalculate the starting grid size
+obj.Nx = 2 * ceil(obj.Lx / (2 * obj.dx0)) + 1;
+
 % create the grid vector for the initial estimate sound speed map
 obj.grid_x = (0:(obj.Nx-1)) * obj.dx0;
 obj.grid_x = obj.grid_x - obj.grid_x(ceil(obj.Nx / 2));
@@ -119,7 +129,7 @@ for idx = 1:obj.Nit
 
     % extract the starting sound-speed estimate for this iteration
     if idx == 1
-        c_est = init_c_val * ones(obj.Nx);
+        c_est = obj.ref_c * ones(obj.Nx);
     else
         c_est = obj.estimates(1:obj.Nx, 1:obj.Nx, idx-1);
     end
@@ -133,7 +143,7 @@ for idx = 1:obj.Nit
     t_iter = tic;
     disp(['Iter ', num2str(idx), ' / ', num2str(obj.Nit), ' dx = ', num2str(1e3*obj.dx), ' mm, Nx = ', num2str(obj.Nx), ' pts']);
     disp('Reconstructing...');
-
+    
     % interpolate the sound speed estimate to match the new grid vector
     if ~isequal(size(c_est), [obj.Nx, obj.Nx])
         c_est = interp2(obj.grid_x, obj.grid_x, c_est, grid_x_up, grid_x_up', 'cubic');
