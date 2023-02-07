@@ -16,7 +16,6 @@ For a transducer ring array with N elements:
 
 - `delta_tof`: this is a N x N matrix. Each `(tdx, rdx)` value contains the time-of-flight difference in seconds between the phantom UST data and the watershot UST data, for the ray joining the `tdx` and `rdx` transducer elements: `delta_tof(tdx, rdx) = tof_phantom(tdx, rdx) - tof_water(tdx, rdx)`. Values of `NaN` should be used for missing data, not `0`.
 - `element_positions`: this is a N x 2 matrix containing the cartesian coordinates of each transducer element. The ring array should be centred on `(0, 0)`.
-- `temperature`: temperature of the water during data acquisition (degrees C).
 
 **Note:** Reciprocity means that a ray joining `tx = 1` with `rx = 139` should have the same time-of-flight data as a ray joining `tx = 139` with `rx = 1`. Therefore, for faster computation the lower triangular part of `delta_tof` should be set to `NaN` so that the code ignores these rays.
 
@@ -46,6 +45,13 @@ dx0        = 8e-3;         % step size for iteration 1 [m]
 ``` 
 In this case, six iterations would be performed, starting with a step size of 8 mm, progressing to a step size of 4 mm, and finishing with a step size of 2 mm. For every iteration, the physical length of the computational grid remains the same, and the sound speed map is interpolated to match the required grid step size.
 
+## Hamming Window
+Since the sound speed values at the boundary are known to represent water, the rays can be hamming-weighted to promote sound speed updates nearer to the reconstruction circle centre. This is controlled by an optional boolean input parameter:
+```
+hamming = true;
+sart.reconstructSart(ref_c, Nit, dx0, ups, hamming=hamming);
+```
+
 ## Getting Started
 
 Clone this repository in a terminal: `git clone https://github.com/ucl-bug/ust-sart.git`
@@ -53,7 +59,6 @@ Open Matlab2022a or more recent, and add the folder to the path:
 ```
 addpath(genpath('<pathname>\ust-sart'));
 ```
-This code uses the functions `waterSoundSpeed` and `getWin` from the [k-Wave toolbox](https://github.com/ucl-bug/k-wave).
 Change directories to the example folder, and run the example script `sart_example.m`.
 
 ```
@@ -69,7 +74,7 @@ load('example_delta_tof');
 delta_tof(logical(tril(ones(size(delta_tof)), -1))) = NaN;
 
 % Initialise sart object
-sart        = SartExperiment(element_positions, delta_tof);
+sart = SartExperiment(element_positions, delta_tof);
 
 % Visualise default reconstruction circle diameter, calculated for this geometry
 recon_d = sart.default_recon_d;
@@ -85,7 +90,7 @@ ups          = [1 * ones(1, 45), ...
 Nit          = length(ups);  % number of iterations
 dx0          = 4e-3;         % step size for iteration 1 [m]
 ref_c        = 1480;         % reference sound speed value for background [m/s]
-hamming      = 1;            % boolean controlling whether hamming window is used
+hamming      = true;         % boolean controlling whether hamming window is used
 border_width = 1;            % width of non-updating region at edge of reconstruction circle (integer multiples of dx0)
 sart.reconstructSart(ref_c, Nit, dx0, ups, ...
     recon_d=0.135, border_width=border_width, hamming=hamming);

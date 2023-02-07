@@ -112,7 +112,10 @@ d_ijm = reshape(d_ijm, sz);
 if obj.hamming
     t_ij = zeros((obj.Nx .^2), 1, 'double'); 
 
-    ham_win = getWin(M, 'Hamming')';
+%     ham_win = getWin(M, 'Hamming')';
+    m = 0:M-1;
+    ham_win = (0.54 - 0.46 * cos(2 * pi * m / (M - 1)));
+    
     h11 = w11 .* ham_win;
     h12 = w12 .* ham_win;
     h21 = w21 .* ham_win;

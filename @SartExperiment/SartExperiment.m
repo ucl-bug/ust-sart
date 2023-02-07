@@ -37,7 +37,7 @@
 classdef SartExperiment < handle
     properties (GetAccess = public, SetAccess = private)
         % Do not change these values
-        delta_s_ratio = 1      % length of each ray-section relative to dx
+        delta_s_ratio = 0.5      % length of each ray-section relative to dx
         c_vec         = [0, 0] % coordinates of array centre [m]
         
         % Properties populated in the class constructor

@@ -29,7 +29,7 @@ end
 switch options.absFname
     case 'default'
         stamp = char(strrep(strrep(string(datetime("now")), ':', '-'), ' ', '-'));
-        fname = ['sart_', stamp, '_Nit-', num2str(obj.Nit), '_d-', num2str(round(1e3*obj.d)), 'mm'];
+        fname = ['sart_', stamp, '_Nit-', num2str(obj.Nit), '_d-', num2str(round(1e3*obj.recon_d)), 'mm'];
         fname = [fname, '.mat'];
     otherwise
         fname = options.absFname;
