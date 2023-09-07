@@ -87,6 +87,19 @@ obj.ref_c            = ref_c;
 obj.Nit              = Nit;
 obj.border_width     = options.border_width;
 
+% set the physical grid length [m]
+pad   = 2; % grid points to pad outside reconstruction circle
+obj.L = obj.recon_d + (obj.dx0 * pad * 2);
+
+% Round the grid length to fit an odd integer number of grid points
+obj.Nx = 2 * ceil(obj.L / (2 * obj.dx0)) + 1;
+
+% calculate the actual discretised grid length [m] - constant throughout
+obj.Lx = (obj.Nx - 1) * obj.dx0;
+
+% recalculate the starting grid size (this changes due to upsampling)
+obj.Nx = 2 * ceil(obj.Lx / (2 * obj.dx0)) + 1;
+
 % calculate maximum number of grid points required across all iterations
 max_up     = max(obj.upsample_factors);
 min_dx     = obj.dx0 / max_up;
@@ -98,19 +111,6 @@ obj.estimates   = zeros(obj.max_Nx, obj.max_Nx, obj.Nit);
 obj.corrections = zeros(obj.max_Nx, obj.max_Nx, obj.Nit);
 obj.dxs         = NaN * ones(1, obj.Nit);
 obj.Nxs         = NaN * ones(1, obj.Nit);
-
-% set the physical grid length [m]
-pad   = 2; % grid points to pad outside reconstruction circle
-obj.L = obj.recon_d + (obj.dx0 * pad * 2);
-
-% Round the grid length to fit an odd integer number of grid points
-obj.Nx = 2 * ceil(obj.L / (2 * obj.dx0)) + 1;
-
-% calculate the actual discretised grid length [m]
-obj.Lx = (obj.Nx - 1) * obj.dx0;
-
-% recalculate the starting grid size
-obj.Nx = 2 * ceil(obj.Lx / (2 * obj.dx0)) + 1;
 
 % create the grid vector for the initial estimate sound speed map
 obj.grid_x = (0:(obj.Nx-1)) * obj.dx0;
