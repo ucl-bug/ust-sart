@@ -55,6 +55,7 @@ arguments
     options.hamming = 0;
     options.recon_d = obj.default_recon_d;
     options.border_width = 1;
+    options.customAxes = [];
 end
 
 border_proportion = (2 * (options.border_width * dx0)) / options.recon_d;
@@ -120,7 +121,15 @@ obj.grid_x = obj.grid_x - obj.grid_x(ceil(obj.Nx / 2));
 % RUN RECONSTRUCTION
 % -----------------------
 disp('----------------------------------------------------------');
-fig1 = figure;
+if isempty(options.customAxes)
+    figure('Position', [576 405 761 411]);
+    ax1 = subplot(3, 2, [1, 3, 5]);
+    ax2 = subplot(3, 2, 4);
+    ax3 = subplot(3, 2, 2);
+    ax4 = subplot(3, 2, 6);
+    options.customAxes = [ax1, ax2, ax3, ax4];
+end
+
 for idx = 1:obj.Nit
 
     % set the grid step size for this iteration and store
@@ -161,7 +170,7 @@ for idx = 1:obj.Nit
     obj.corrections(1:obj.Nx, 1:obj.Nx, idx) = weighted_correction;
 
     % Update the plot
-    plotReconResult(obj, Iter=idx, Handle=fig1)
+    plotReconResult(obj, options.customAxes, Iter=idx)
 
     % Display iteration time stat
     obj.total_timer = obj.total_timer + toc(t_iter);

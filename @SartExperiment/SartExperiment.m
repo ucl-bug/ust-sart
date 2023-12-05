@@ -94,7 +94,7 @@ classdef SartExperiment < handle
         
         plotSetup(obj)
         reconstructSart(obj, ref_c, Nit, dx0, upsample_factors, options)
-        plotReconResult(obj, idx, options)
+        plotReconResult(obj, customAxes, options)
         [new_c_est, weighted_correction, rmse] = performSartIteration(obj, c_est, options)
         [d_ijm, t_ij]                          = calculatePixelWeights(obj, m_Xvec, m_yvec);
         [m_xvec, m_yvec, M, deltaS]            = findRaySections(obj, tdx, rdx)

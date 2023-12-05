@@ -1,4 +1,4 @@
-function plotReconResult(obj, options)
+function plotReconResult(obj, customAxes, options)
 %PLOTRECONRESULT Plots the reconstruction results for the SartExperiment class
 %
 % DESCRIPTION:
@@ -36,61 +36,71 @@ function plotReconResult(obj, options)
 
 arguments
     obj
+    customAxes
     options.Iter   = obj.Nit;
-    options.Handle = figure;
     options.cRange = [-Inf, Inf];
-    options.Loop   = 0
+    options.Loop   = 0;
 end
 
 if options.Loop
     for idx = 1:obj.Nit
-        plotSingleIter(obj, idx, options.Handle, options.cRange);
+        plotSingleIter(obj, idx, options.cRange, customAxes);
         drawnow
         pause(0.25);
     end
 else
-    plotSingleIter(obj, options.Iter, options.Handle, options.cRange);
+    plotSingleIter(obj, options.Iter, options.cRange, customAxes);
 end
 
-function plotSingleIter(obj, idx, handle, cRange)
+function plotSingleIter(obj, idx, cRange, customAxes)
 
 Nx = obj.Nxs(idx);
 
-figure(handle);
-clf(handle, 'reset');
-subplot(2, 2, 1);
-imagesc(1e3*obj.grid_x, 1e3*obj.grid_x, obj.estimates(1:Nx, 1:Nx, idx), cRange);
-c = colorbar;
-colormap(getColorMap);
-title(['Iteration ', num2str(idx), ' / ', num2str(obj.Nit),]);
-xlabel('x-position [mm]');
-ylabel('y-position [mm]');
-ylabel(c, 'Sound Speed [m/s]')
-axis image
+% figure(handle);
+% clf(handle, 'reset');
 
-subplot(2, 2, 3);
-imagesc(1e3*obj.grid_x, 1e3*obj.grid_x, obj.corrections(1:Nx, 1:Nx, idx));
-c = colorbar;
-colormap(getColorMap);
-title('Weighted Correction');
-xlabel('x-position [mm]');
-ylabel('y-position [mm]');
-ylabel(c, 'Relative Slowness')
-axis image
+% subplot(, 2, 2, 1);
+% data = obj.estimates(1:Nx, 1:Nx, idx);
+% maxDev = max(abs([max(data(:)) - obj.ref_c, min(data(:)) - obj.ref_c]));
+% cRange = [obj.ref_c - maxDev, obj.ref_c + maxDev];
 
-subplot(2, 2, 2);
-h = semilogy(1:obj.Nit, obj.rmses, 'k-');
+imagesc(customAxes(1), obj.estimates(1:Nx, 1:Nx, idx), cRange);
+c = colorbar(customAxes(1), 'southoutside');
+colormap(customAxes(1), getColorMap);
+title(customAxes(1), ['Iteration ', num2str(idx), ' / ', num2str(obj.Nit),]);
+xlim(customAxes(1), [1, Nx]);
+ylim(customAxes(1), [1, Nx]);
+customAxes(1).XAxis.Visible = 'off';
+customAxes(1).YAxis.Visible = 'off';
+ylabel(c, '[m/s]');
+axis(customAxes(1), 'square');
+
+% subplot(2, 2, 3);
+imagesc(customAxes(3), obj.corrections(1:Nx, 1:Nx, idx));
+colormap(customAxes(3), getColorMap);
+xlim(customAxes(3), [1, Nx]);
+ylim(customAxes(3), [1, Nx]);
+title(customAxes(3), 'Weighted Correction');
+customAxes(3).XAxis.Visible = 'off';
+customAxes(3).YAxis.Visible = 'off';
+axis(customAxes(3), 'square');
+
+% subplot(, 2, 2, 2);
+h = semilogy(customAxes(2), 1:obj.Nit, obj.rmses, 'k-');
 h.Marker = '.';
 h.MarkerEdgeColor = 'r';
-xlabel('Iteration');
-ylabel('RMSE [us]');
+xlabel(customAxes(2), 'Iteration');
+ylabel(customAxes(2), 'RMSE [\mus]');
+customAxes(2).XAxis.Visible = 'off';
+title(customAxes(2), '');
 
-subplot(2, 2, 4);
-h = plot(1:obj.Nit, obj.dxs*1e3, 'k-');
+% subplot(, 2, 2, 4);
+h = plot(customAxes(4), 1:obj.Nit, obj.dxs*1e3, 'k-');
 h.Marker = '.';
 h.MarkerEdgeColor = 'r';
-xlabel('Iteration');
-ylabel('Grid Step Size [mm]');   
+xlabel(customAxes(4), 'Iteration');
+ylabel(customAxes(4), 'dx [mm]');   
+title(customAxes(4), '');
 
 drawnow
 end
