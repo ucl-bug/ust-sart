@@ -1,4 +1,4 @@
-function reconstructSart(obj, ref_c, Nit, dx0, upsample_factors, options)
+function reconstructSart(obj, ref_c, dx0, upsample_factors, options)
 %RECONSTRUCTSART runs an interative SART reconstruction for sound speed inversion of time-of-flight data.
 %
 % DESCRIPTION:
@@ -48,7 +48,6 @@ function reconstructSart(obj, ref_c, Nit, dx0, upsample_factors, options)
 arguments
     obj
     ref_c
-    Nit
     dx0
     upsample_factors
 
@@ -56,6 +55,7 @@ arguments
     options.recon_d = obj.default_recon_d;
     options.border_width = 1;
     options.customAxes = [];
+    options.cLim = [-Inf, Inf];
 end
 
 border_proportion = (2 * (options.border_width * dx0)) / options.recon_d;
@@ -85,7 +85,7 @@ obj.hamming          = options.hamming;
 obj.dx0              = dx0;
 obj.upsample_factors = upsample_factors;
 obj.ref_c            = ref_c;
-obj.Nit              = Nit;
+obj.Nit              = length(upsample_factors);
 obj.border_width     = options.border_width;
 
 % set the physical grid length [m]
@@ -162,7 +162,7 @@ for idx = 1:obj.Nit
     obj.grid_x = grid_x_up;
     
     % calculate new sound speed estimate
-    [new_c_est, weighted_correction, rmse] = performSartIteration(obj, c_est, beta=1);
+    [new_c_est, weighted_correction, rmse] = performSartIteration(obj, c_est, beta=1, cLim=options.cLim);
 
     % store estimates, weighted correction and RMSE
     obj.rmses(idx) = rmse;
@@ -183,6 +183,5 @@ disp(['Time for breaking rays into sections: ', num2str(obj.ray_sect_timer), ' s
 disp(['Time for calculating pixel weights:   ', num2str(obj.interpolate_timer), ' s']);
 disp(['Total time:                           ', num2str(obj.total_timer), ' s']);
 disp('----------------------------------------------------------');
-
 
 end

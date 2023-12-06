@@ -93,7 +93,7 @@ classdef SartExperiment < handle
         end
         
         plotSetup(obj)
-        reconstructSart(obj, ref_c, Nit, dx0, upsample_factors, options)
+        reconstructSart(obj, ref_c, dx0, upsample_factors, options)
         plotReconResult(obj, customAxes, options)
         [new_c_est, weighted_correction, rmse] = performSartIteration(obj, c_est, options)
         [d_ijm, t_ij]                          = calculatePixelWeights(obj, m_Xvec, m_yvec);

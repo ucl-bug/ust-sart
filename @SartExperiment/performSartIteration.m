@@ -48,6 +48,7 @@ arguments
     obj
     c_est
     options.beta = 1;
+    options.cLim = [-Inf, Inf];
 end
 
 Nx = obj.Nx;
@@ -158,5 +159,9 @@ new_c_est(isnan(new_c_est)) = 0;
 
 % enforce positivity
 new_c_est(new_c_est < 0) = 0;
+
+% enforce limits
+new_c_est(new_c_est < options.cLim(1)) = options.cLim(1); 
+new_c_est(new_c_est > options.cLim(2)) = options.cLim(2); 
 
 end
