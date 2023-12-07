@@ -70,6 +70,7 @@ classdef SartExperiment < handle
         rmses            % Room mean square error for each iteration [us]
         dxs              % grid step size for each iteration [m]
         Nxs              % grid length [pts] for each iteration
+        completedUpto    % last iteration index that successfully completed
 
         % Timers for feature development
         ray_sect_timer    = 0;
@@ -99,6 +100,7 @@ classdef SartExperiment < handle
         [d_ijm, t_ij]                          = calculatePixelWeights(obj, m_Xvec, m_yvec);
         [m_xvec, m_yvec, M, deltaS]            = findRaySections(obj, tdx, rdx)
         saveReconResult(obj)
+        [gridVec, dx, soundSpeed] = getFinalEstimate(obj)
         
     end
 end

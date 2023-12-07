@@ -176,6 +176,9 @@ for idx = 1:obj.Nit
     obj.total_timer = obj.total_timer + toc(t_iter);
     disp(['Completed in ', num2str(toc(t_iter))]);   
 
+    % indicate that this iteration finished without errors or interuption
+    obj.completedUpto = idx;
+
 end
 
 disp('----------------------------------------------------------');
